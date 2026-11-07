@@ -27,6 +27,7 @@ class StudentDeactivationIntegrationTest extends AbstractIntegrationTest {
 
     private String adminToken;
     private String otherAdminToken;
+    private String instructorToken;
     private String studentToken;
 
     private String login(String username) throws Exception {
@@ -41,6 +42,7 @@ class StudentDeactivationIntegrationTest extends AbstractIntegrationTest {
     void setUp() throws Exception {
         adminToken = login("b.wei@abc.edu");
         otherAdminToken = login("t.cook@abc.edu");
+        instructorToken = login("b.gates@abc.edu");
         studentToken = login("j.smith@abc.edu");
     }
 
@@ -65,6 +67,15 @@ class StudentDeactivationIntegrationTest extends AbstractIntegrationTest {
         assertThat(disabled.getSection().getSectionId()).isEqualTo(originalSectionId);
         assertThat(activities.count()).isEqualTo(activitiesBefore);
         assertThat(evaluations.count()).isEqualTo(evaluationsBefore);
+    }
+
+    @Test
+    void instructorAssignedToStudentsSectionMayDeactivate() throws Exception {
+        mvc.perform(patch(baseUrl + "/students/4/deactivate")
+                        .header(HttpHeaders.AUTHORIZATION, instructorToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.enabled").value(false));
+        assertThat(students.findById(4).orElseThrow().isEnabled()).isFalse();
     }
 
     @Test
