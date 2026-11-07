@@ -1473,6 +1473,11 @@ Details:
 7. Use case ends.
 
 **Extensions:**
+- **2a. The actor is not the student's course admin or an instructor assigned to her course section (BR-student-lifecycle):** The system refuses access (403), does not reveal account details or change any data, and the use case ends.
+- **3a. The selected student is already deactivated:** The system does not offer an active Deactivate action; if a stale client nonetheless submits the action, the server returns a conflict (409), makes no change, and the use case ends.
+- **4a. The actor cancels or leaves the warning before confirming:** The system closes the confirmation without a mutation request; the account, team, and submitted work are unchanged; the use case ends.
+- **6a. The deactivation cannot be saved:** The system reports that the action failed, does not claim success, and leaves the account state unchanged; the use case ends.
+
 **Priority:** Low
 **Frequency of Use:** Rare. Occurs occasionally when a student withdraws from a course section.
 **Business Rules:** BR-student-lifecycle
