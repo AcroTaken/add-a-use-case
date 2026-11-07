@@ -30,6 +30,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import team.projectpulse.security.authorizationmanagers.*;
+import team.projectpulse.user.UserRepository;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -342,8 +343,11 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey(this.publicKey).build();
+    public JwtDecoder jwtDecoder(UserRepository userRepository) {
+        // The signed JWT is validated first; then each request rechecks the persisted
+        // account's enabled state, so deactivation revokes already-issued tokens.
+        JwtDecoder signedDecoder = NimbusJwtDecoder.withPublicKey(this.publicKey).build();
+        return new ActiveAccountJwtDecoder(signedDecoder, userRepository);
     }
 
     @Bean
