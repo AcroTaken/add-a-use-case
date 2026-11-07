@@ -39,7 +39,7 @@
           <el-tag type="danger" v-else>Disabled</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Operations" width="120">
+      <el-table-column label="Operations" width="240">
         <template #default="{ row }">
           <el-button
             icon="Edit"
@@ -48,6 +48,13 @@
             type="primary"
             @click.stop="showEditStudentDialog(row)"
           ></el-button>
+          <el-button
+            v-if="row.enabled"
+            type="danger"
+            size="small"
+            :loading="deactivatingStudentId === row.id"
+            @click.stop="confirmDeactivate(row)"
+          >Deactivate</el-button>
         </template>
       </el-table-column>
       <template #empty>
@@ -78,7 +85,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { searchStudents } from '@/apis/student'
+import { searchStudents, deactivateStudent } from '@/apis/student'
 import type {
   SearchStudentByCriteriaResponse,
   Student,
@@ -86,7 +93,7 @@ import type {
 } from '@/apis/student/types'
 import { useSettingsStore } from '@/stores/settings'
 import EditStudentForm from './EditStudentForm.vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const searchCriteria = ref<StudentSearchCriteria>({
   sectionId: NaN,
@@ -96,6 +103,7 @@ const searchCriteria = ref<StudentSearchCriteria>({
 
 const students = ref<Student[]>([]) // Array of loaded students
 const loading = ref<boolean>(true) // Loading status
+const deactivatingStudentId = ref<number | null>(null)
 const settingsStore = useSettingsStore()
 
 // Pagination information
@@ -127,6 +135,37 @@ async function loadStudents() {
   pageSize.value = result.data.size
   totalElements.value = result.data.totalElements
   loading.value = false
+}
+
+async function confirmDeactivate(student: Student) {
+  if (!student.id || !student.enabled || deactivatingStudentId.value !== null) return
+
+  try {
+    await ElMessageBox.confirm(
+      'Deactivation blocks all logins and existing sessions immediately, stops reminders and new submissions, and removes this student from teammates\' future peer-evaluation obligations. The student stays on her team, and existing activity reports and evaluations remain in the record. You can reactivate the account later.',
+      `Deactivate ${student.firstName} ${student.lastName}?`,
+      {
+        type: 'warning',
+        confirmButtonText: 'Deactivate student',
+        cancelButtonText: 'Cancel',
+        distinguishCancelAndClose: true
+      }
+    )
+  } catch {
+    // UC-STU-deactivate-student extension 4a: cancel or close makes no API request.
+    return
+  }
+
+  deactivatingStudentId.value = student.id
+  try {
+    await deactivateStudent(student.id)
+    ElMessage.success('Student deactivated successfully')
+    await loadStudents()
+  } catch {
+    ElMessage.error('Deactivation could not be completed. Refresh the student list and try again.')
+  } finally {
+    deactivatingStudentId.value = null
+  }
 }
 
 function resetSearchCriteria() {
