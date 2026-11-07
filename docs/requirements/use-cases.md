@@ -1525,6 +1525,7 @@ Details:
 
 **Associated Information:**
 - The course admin or instructor shall be able to cancel the use case at any time prior to submitting it.
+- Deactivation leaves the student's course section and team association in place (BR-student-lifecycle). Reactivation does not move or reassign the student; once active, the student becomes eligible for normal future obligations according to BR-submission-owed. A separate course-admin team reassignment, if any, remains governed by BR-team-admin-only. No reactivation code is part of UC-STU-deactivate-student.
 
 **Related Use Cases:** UC-STU-delete-student: Delete a student; UC-STU-deactivate-student: Deactivate a student
 **Assumptions:**
