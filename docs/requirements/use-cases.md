@@ -1483,7 +1483,10 @@ Details:
 **Business Rules:** BR-student-lifecycle; BR-team-admin-only; BR-submission-owed; BR-deactivated-student-evaluations; BR-section-scoped-access
 
 **Associated Information:**
-- Consequence of the deactivation: The student will no longer be able to log in or submit weekly activity reports and peer evaluations, but the student's account and her previously submitted work are kept in the system. Deactivation will NOT remove the student from the system, and the account can be reactivated in the future (UC-STU-reactivate-student: Reactivate a student). This is distinct from deletion (UC-STU-delete-student: Delete a student), which is a physical, unrecoverable delete. The course admin or instructor shall be able to cancel the use case at any time prior to submitting it.
+- The confirmation warning explains that disabling the account immediately blocks new logins and all protected requests, including those made with a previously issued but otherwise-valid token (FR-SEC-active-account). It also explains that reminders stop and the student cannot submit new weekly activity reports or peer evaluations.
+- The warning explicitly explains that section/team membership and previously submitted records remain, and that active teammates no longer owe new evaluations of her (BR-student-lifecycle, BR-submission-owed, BR-deactivated-student-evaluations). Historical peer evaluations remain visible to authorized instructors for weeks with recorded evaluations; normal editing windows still apply to existing evaluations.
+- This is deactivation, not physical deletion (UC-STU-delete-student). The account can later be reactivated under UC-STU-reactivate-student. Canceling at any point before confirmation has no side effects.
+- The backend checks the target account state and authorization at request time even if the UI previously showed an available action. A successful response is sent only after the account status is saved.
 
 **Related Use Cases:** UC-STU-delete-student: Delete a student; UC-STU-reactivate-student: Reactivate a student
 **Assumptions:**
