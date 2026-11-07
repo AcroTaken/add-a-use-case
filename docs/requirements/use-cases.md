@@ -1458,7 +1458,7 @@ Details:
 
 **Preconditions:**
 - PRE-1. The course admin or instructor is logged into the system.
-- PRE-2. There exists at least one active student in the system.
+- PRE-2. The actor has selected a student account to manage. Its current active state is checked when the action is requested (extension 3a).
 
 **Postconditions:**
 - POST-1. The student's account is deactivated.
