@@ -174,7 +174,8 @@ class StudentServiceTest {
         assertThat(result.getLastName()).isEqualTo(update.getLastName());
         assertThat(result.getEmail()).isEqualTo(update.getEmail());
 //        assertThat(result.getRoles()).isEqualTo(update.getRoles());
-        assertThat(result.isEnabled()).isEqualTo(update.isEnabled());
+        // UC-STU-deactivate-student: even an instructor may not toggle status via profile PUT.
+        assertThat(result.isEnabled()).isNotEqualTo(update.isEnabled());
     }
 
     @Test
