@@ -67,6 +67,13 @@ public class EvaluationService {
             throw new PeerEvaluationIllegalArgumentException("The evaluator and evaluatee must be on the same team.");
         }
 
+        // BR-deactivated-student-evaluations: never create a new evaluation
+        // about an inactive teammate, even though her team link is retained.
+        // Existing evaluations remain editable during the original window.
+        if (!newPeerEvaluation.getEvaluatee().isEnabled()) {
+            throw new PeerEvaluationIllegalArgumentException("You cannot evaluate a deactivated student.");
+        }
+
         // Make sure this is not a duplicate evaluation
         if (this.evaluationRepository.findByWeekAndEvaluatorIdAndEvaluateeId(newPeerEvaluation.getWeek(), newPeerEvaluation.getEvaluator().getId(), newPeerEvaluation.getEvaluatee().getId()).isPresent()) {
             throw new PeerEvaluationIllegalArgumentException("You have already submitted an evaluation for " + newPeerEvaluation.getEvaluatee().getFirstName() + " in this week.");
@@ -221,7 +228,10 @@ public class EvaluationService {
         report.setSectionName(this.sectionRepository.findById(sectionId).orElseThrow(() -> new ObjectNotFoundException("section", sectionId)).getSectionName());
 
         // Get all students in the section
-        List<Student> students = this.studentRepository.findBySectionSectionId(sectionId).stream().filter(student -> student.getTeam() != null).collect(Collectors.toList());
+        List<Student> students = this.studentRepository.findBySectionSectionId(sectionId).stream()
+                .filter(student -> student.getTeam() != null &&
+                        (student.isEnabled() || !this.evaluationRepository.findByWeekAndEvaluateeId(week, student.getId()).isEmpty()))
+                .collect(Collectors.toList());
 
         // For each student, compute her average total score, collect all public comments and private comments, and compute rating averages for each criterion.
         students.forEach(student -> {
