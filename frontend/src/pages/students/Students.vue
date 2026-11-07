@@ -157,14 +157,23 @@ async function confirmDeactivate(student: Student) {
   }
 
   deactivatingStudentId.value = student.id
+  let deactivated = false
   try {
     await deactivateStudent(student.id)
+    deactivated = true
     ElMessage.success('Student deactivated successfully')
-    await loadStudents()
   } catch {
     ElMessage.error('Deactivation could not be completed. Refresh the student list and try again.')
   } finally {
     deactivatingStudentId.value = null
+  }
+
+  if (deactivated) {
+    try {
+      await loadStudents()
+    } catch {
+      ElMessage.warning('Account deactivated, but the list could not refresh. Reload the page to see the new status.')
+    }
   }
 }
 
